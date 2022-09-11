@@ -1,0 +1,14 @@
+- hosts: proxmox
+  become: yes
+  tasks:
+  - name: creating the virtual machine and configuring parameters vm2
+    ansible.builtin.command: qm create 132 --name ubuntu-analise-2 --net0 virtio,bridge=vmbr0 --ostype l26 --memory 1024 --onboot yes --cpu host --cores 1 --sockets 1 --tag 121 --ide0 local-lvm:cloudinit --ipconfig0 ip=192.168.100.101/24,gw=192.168.100.1 --nameserver 192.168.100.20 --searchdomain romenson.local  --serial0 socket --vga serial0
+  - name: importing ubuntu 22.04 disk in local-lvm vm2
+    ansible.builtin.command: qm importdisk 132 jammy-server-cloudimg-amd64-disk-kvm.img local-lvm
+  - name: set disk paramts vm2
+    ansible.builtin.command: qm set 132 --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-132-disk-0,cache=writeback
+  - name: changing disk priority at boot
+    ansible.builtin.command: qm set 132 --boot order=scsi0
+  - name: setting username and password for VM2
+    ansible.builtin.command: qm set 132 --cipassw monitoring --ciuser romensonfelix
+
